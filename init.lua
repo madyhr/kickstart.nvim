@@ -678,6 +678,19 @@ require('lazy').setup({
         clangd = {},
         -- gopls = {},
         -- rust_analyzer = {},
+        basedpyright = {
+          settings = {
+            basedpyright = {
+              analysis = {
+                -- Adjust this path to where your build folder usually is
+                -- relative to where you launch neovim
+                extraPaths = { './build', '../build' },
+                autoSearchPaths = true,
+                useLibraryCodeForTypes = true,
+              },
+            },
+          },
+        },
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -773,7 +786,7 @@ require('lazy').setup({
         lua = { 'stylua' },
         cpp = { 'clang-format' },
         -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
+        python = { 'isort', 'black' },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
