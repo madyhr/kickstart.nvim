@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.o.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.o.relativenumber = true
+vim.o.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
@@ -120,10 +120,10 @@ end)
 
 -- Enable break indent
 vim.o.breakindent = true
-vim.o.tabstop = 2 -- A TAB character looks like 4 spaces
+vim.o.tabstop = 2      -- A TAB character looks like 4 spaces
 vim.o.expandtab = true -- Pressing the TAB key will insert spaces instead of a TAB character
-vim.o.softtabstop = 2 -- Number of spaces inserted instead of a TAB character
-vim.o.shiftwidth = 2 -- Number of spaces inserted when indenting
+vim.o.softtabstop = 2  -- Number of spaces inserted instead of a TAB character
+vim.o.shiftwidth = 2   -- Number of spaces inserted when indenting
 
 -- Save undo history
 vim.o.undofile = true
@@ -287,6 +287,47 @@ require('lazy').setup({
       },
     },
   },
+  -- Debugger
+  {
+    'mfussenegger/nvim-dap-python',
+    dependencies = {
+      'mfussenegger/nvim-dap',
+      'rcarriga/nvim-dap-ui',
+    },
+    ft = 'python',
+    config = function()
+      local path = vim.fn.stdpath 'data' .. '/mason/packages/debugpy/venv/bin/python'
+      local dap_python = require 'dap-python'
+      local dap = require 'dap'
+
+      dap_python.setup(path)
+
+      table.insert(dap.configurations.python, {
+        type = 'python',
+        request = 'attach',
+        name = 'Attach to IsaacLab',
+        connect = {
+          host = '127.0.0.1',
+          port = 5678,
+        },
+        pathMappings = {
+          {
+            localRoot = vim.fn.getcwd(),
+            remoteRoot = '.',
+          },
+        },
+      })
+
+      -- Python specific keymaps
+      vim.keymap.set('n', '<leader>dpt', function()
+        dap_python.test_method()
+      end, { desc = '[D]ebug [P]ython [T]est' })
+
+      vim.keymap.set('n', '<leader>dpc', function()
+        dap_python.test_class()
+      end, { desc = '[D]ebug [P]ython [C]lass' })
+    end,
+  },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
@@ -302,7 +343,7 @@ require('lazy').setup({
   -- Then, because we use the `opts` key (recommended), the configuration runs
   -- after the plugin has been loaded as `require(MODULE).setup(opts)`.
 
-  { -- Useful plugin to show you pending keybinds.
+  {                     -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
     opts = {
@@ -383,7 +424,7 @@ require('lazy').setup({
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
-      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+      { 'nvim-tree/nvim-web-devicons',            enabled = vim.g.have_nerd_font },
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -491,7 +532,7 @@ require('lazy').setup({
       'WhoIsSethDaniel/mason-tool-installer.nvim',
 
       -- Useful status updates for LSP.
-      { 'j-hui/fidget.nvim', opts = {} },
+      { 'j-hui/fidget.nvim',    opts = {} },
 
       -- Allows extra capabilities provided by blink.cmp
       'saghen/blink.cmp',
@@ -675,23 +716,32 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        clangd = {},
+        clangd = {
+          capabilities = {
+            offsetEncoding = { 'utf-16' },
+          },
+        },
         -- gopls = {},
         -- rust_analyzer = {},
         basedpyright = {
+          capabilities = {
+            offsetEncoding = { 'utf-16' },
+          },
           settings = {
             basedpyright = {
               analysis = {
-                -- Adjust this path to where your build folder usually is
-                -- relative to where you launch neovim
-                extraPaths = { './build', '../build' },
                 autoSearchPaths = true,
-                useLibraryCodeForTypes = true,
+                diagnosticMode = 'openFilesOnly',
               },
             },
           },
         },
-        -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
+
+        ruff = {
+          capabilities = {
+            offsetEncoding = { 'utf-16' },
+          },
+        }, -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
         --    https://github.com/pmizio/typescript-tools.nvim
@@ -732,8 +782,8 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
-        'black', -- Strict Python formatter (the equivalent of clang-format)
-        'isort', -- Sorts Python imports
+        'black',  -- Strict Python formatter (the equivalent of clang-format)
+        'isort',  -- Sorts Python imports
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -960,7 +1010,7 @@ require('lazy').setup({
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
+    main = 'nvim-treesitter.config', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
       ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
@@ -992,11 +1042,11 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.debug',
   require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.neo-tree',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
